@@ -1,0 +1,119 @@
+.auth-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e23744 0%, #c72232 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  .auth-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+    text-align: center;
+
+    .auth-logo {
+      width: 140px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #1c1c1c;
+    }
+
+    p {
+      font-size: 14px;
+      color: #686b78;
+      margin-bottom: 28px;
+    }
+
+    .auth-error {
+      background: #fff0f1;
+      color: #e23744;
+      border: 1px solid #ffc5c9;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    form {
+      text-align: left;
+
+      .form-group {
+        margin-bottom: 16px;
+
+        label {
+          display: block;
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 6px;
+          color: #1c1c1c;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px 14px;
+          border: 1.5px solid #e0e0e0;
+          border-radius: 10px;
+          font-size: 15px;
+          font-family: "Poppins", sans-serif;
+          outline: none;
+          transition: border-color 0.15s;
+          color: #1c1c1c;
+
+          &:focus {
+            border-color: #e23744;
+          }
+
+          &::placeholder {
+            color: #aaa;
+          }
+        }
+      }
+
+      .auth-btn {
+        width: 100%;
+        background: #e23744;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 8px;
+        font-family: "Poppins", sans-serif;
+        transition: background 0.15s;
+
+        &:hover {
+          background: #c72232;
+        }
+      }
+    }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #686b78;
+
+      span {
+        color: #e23744;
+        cursor: pointer;
+        font-weight: 600;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}

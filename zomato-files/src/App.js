@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header/Header";
@@ -18,29 +18,29 @@ import AddRestaurant from "./AddRestaurant";
 
 import "./app.scss";
 
-// Toast notification
-const Toast = ({ message }) =>
+// Simple toast notification
+const Toast = ({ message }) => (
   message ? (
     <div style={{
       position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
       background: "#1c1c1c", color: "white", padding: "12px 24px",
       borderRadius: 10, fontSize: 14, fontWeight: 500, zIndex: 9999,
-      boxShadow: "0 4px 20px rgba(0,0,0,0.2)", whiteSpace: "nowrap",
-      animation: "fadeInUp 0.3s ease",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.2)", whiteSpace: "nowrap"
     }}>
       {message}
     </div>
-  ) : null;
+  ) : null
+);
 
 // Order success modal
 const OrderSuccess = ({ onClose, eta }) => (
   <div style={{
     position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
-    zIndex: 4000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    zIndex: 4000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20
   }}>
     <div style={{
       background: "white", borderRadius: 20, maxWidth: 400, width: "100%",
-      padding: 40, textAlign: "center",
+      padding: 40, textAlign: "center"
     }}>
       <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
       <h2 style={{ fontSize: 24, fontWeight: 700, color: "#3d9b6d", marginBottom: 8 }}>Order Placed!</h2>
@@ -60,14 +60,14 @@ const OrderSuccess = ({ onClose, eta }) => (
                 width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
                 background: step.done ? "#3d9b6d" : "white",
                 border: `2px solid ${step.done ? "#3d9b6d" : step.active ? "#e23744" : "#e0e0e0"}`,
-                boxShadow: step.active ? "0 0 0 3px rgba(226,55,68,0.2)" : "none",
+                boxShadow: step.active ? "0 0 0 3px rgba(226,55,68,0.2)" : "none"
               }} />
               {i < 3 && <div style={{ width: 2, height: 20, background: step.done ? "#3d9b6d" : "#e0e0e0" }} />}
             </div>
             <span style={{
               fontSize: 14, paddingTop: 1,
               color: step.done ? "#3d9b6d" : step.active ? "#e23744" : "#686b78",
-              fontWeight: step.done || step.active ? 600 : 400,
+              fontWeight: step.done || step.active ? 600 : 400
             }}>
               {step.label}
             </span>
@@ -77,7 +77,7 @@ const OrderSuccess = ({ onClose, eta }) => (
       <button onClick={onClose} style={{
         background: "#3d9b6d", color: "white", border: "none",
         padding: "12px 32px", borderRadius: 10, fontSize: 15,
-        fontWeight: 700, cursor: "pointer", fontFamily: "Poppins, sans-serif",
+        fontWeight: 700, cursor: "pointer", fontFamily: "Poppins, sans-serif"
       }}>
         Close
       </button>
@@ -85,7 +85,7 @@ const OrderSuccess = ({ onClose, eta }) => (
   </div>
 );
 
-function HomePage({ user, onLogout }) {
+function HomePage({ user, onLogout, onLoginRequired }) {
   const [search, setSearch] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [cart, setCart] = useState({});
@@ -93,9 +93,6 @@ function HomePage({ user, onLogout }) {
   const [toast, setToast] = useState("");
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [eta] = useState(Math.floor(Math.random() * 15) + 25);
-  const [activeFilter, setActiveFilter] = useState(null);
-  const [filterLabel, setFilterLabel] = useState("");
-  const restaurantRef = useRef(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -103,37 +100,6 @@ function HomePage({ user, onLogout }) {
   };
 
   const cartCount = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
-
-  // Scroll to restaurant list and apply a filter
-  const applyFilter = (filter, label) => {
-    setActiveFilter(filter);
-    setFilterLabel(label);
-    setSearch("");
-    setTimeout(() => {
-      restaurantRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  };
-
-  const handleCardClick = (filter, title) => {
-    if (filter === "order-online") {
-      applyFilter("order-online", "Order Online");
-    } else {
-      applyFilter(filter, title);
-    }
-  };
-
-  const handleCollectionClick = (filter, title) => {
-    applyFilter(filter, title);
-  };
-
-  const handleLocalityClick = (locality) => {
-    applyFilter("locality", locality);
-  };
-
-  const handleClearFilter = () => {
-    setActiveFilter(null);
-    setFilterLabel("");
-  };
 
   const handleAddItem = (item, restaurantId) => {
     setCart((prev) => ({
@@ -155,8 +121,8 @@ function HomePage({ user, onLogout }) {
 
   const handlePlaceOrder = () => {
     if (!user) {
+      onLoginRequired();
       showToast("Please login to place your order");
-      setTimeout(() => { window.location.href = "/login"; }, 1500);
       return;
     }
     if (Object.keys(cart).length === 0) {
@@ -175,33 +141,25 @@ function HomePage({ user, onLogout }) {
         onCartOpen={() => setCartOpen(true)}
         user={user}
         onLogout={onLogout}
-        onSearch={(val) => { setSearch(val); if (val) restaurantRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+        onSearch={setSearch}
         searchValue={search}
       />
 
-      <Card onCategorySelect={handleCardClick} />
-      <Collection onCollectionSelect={handleCollectionClick} />
+      <Card />
+      <Collection />
 
-      {/* Restaurant Section */}
-      <div ref={restaurantRef} style={{ padding: "24px 5% 0" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700 }}>
-          {search
-            ? `Results for "${search}"`
-            : activeFilter && filterLabel
-            ? filterLabel
-            : "Restaurants Near You"}
+      <div style={{ padding: "0 5%", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+          {search ? `Results for "${search}"` : "Restaurants Near You"}
         </h2>
       </div>
 
       <RestaurantList
         onSelectRestaurant={setSelectedRestaurant}
         searchQuery={search}
-        activeFilter={activeFilter}
-        filterLabel={filterLabel}
-        onClearFilter={handleClearFilter}
       />
 
-      <Cities onLocalitySelect={handleLocalityClick} />
+      <Cities />
       <CTA />
       <AccContainer />
       <Footer />
@@ -227,7 +185,9 @@ function HomePage({ user, onLogout }) {
       />
 
       {/* Order Success */}
-      {orderSuccess && <OrderSuccess eta={eta} onClose={() => setOrderSuccess(false)} />}
+      {orderSuccess && (
+        <OrderSuccess eta={eta} onClose={() => setOrderSuccess(false)} />
+      )}
 
       {/* Toast */}
       <Toast message={toast} />
@@ -238,12 +198,24 @@ function HomePage({ user, onLogout }) {
 function App() {
   const [user, setUser] = useState(null);
 
+  const handleLogin = (name) => setUser(name);
+  const handleLogout = () => setUser(null);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage user={user} onLogout={() => setUser(null)} />} />
-        <Route path="/login" element={<Login onLogin={(name) => setUser(name)} />} />
-        <Route path="/signup" element={<Signup onLogin={(name) => setUser(name)} />} />
+        <Route
+          path="/"
+          element={
+            <HomePage
+              user={user}
+              onLogout={handleLogout}
+              onLoginRequired={() => window.location.href = "/login"}
+            />
+          }
+        />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
         <Route path="/add-restaurant" element={<AddRestaurant />} />
       </Routes>
     </BrowserRouter>

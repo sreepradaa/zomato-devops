@@ -1,0 +1,204 @@
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+
+  .menu-modal {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 760px;
+    margin: auto;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+
+    .menu-header {
+      background: linear-gradient(135deg, #e23744, #c72232);
+      color: white;
+      padding: 28px;
+      position: relative;
+
+      .close-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.35);
+        }
+      }
+
+      .restaurant-info {
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 6px;
+        }
+
+        p {
+          font-size: 14px;
+          opacity: 0.85;
+        }
+      }
+    }
+
+    .menu-body {
+      padding: 24px;
+      max-height: 70vh;
+      overflow-y: auto;
+
+      .menu-category {
+        margin-bottom: 8px;
+
+        .category-title {
+          font-size: 12px;
+          font-weight: 700;
+          color: #e23744;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          margin: 20px 0 10px;
+          padding-bottom: 6px;
+          border-bottom: 2px solid #fff0f1;
+        }
+
+        .menu-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 0;
+          border-bottom: 1px solid #f5f5f5;
+          gap: 16px;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .item-info {
+            flex: 1;
+
+            .item-name {
+              font-size: 15px;
+              font-weight: 600;
+              margin-bottom: 4px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+
+              .veg-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                flex-shrink: 0;
+
+                &.veg {
+                  background: #3d9b6d;
+                  border: 1.5px solid #3d9b6d;
+                }
+
+                &.non-veg {
+                  background: #e23744;
+                  border: 1.5px solid #e23744;
+                }
+              }
+            }
+
+            .item-desc {
+              font-size: 13px;
+              color: #686b78;
+              margin-bottom: 6px;
+              line-height: 1.4;
+            }
+
+            .item-price {
+              font-size: 15px;
+              font-weight: 700;
+            }
+          }
+
+          .item-action {
+            flex-shrink: 0;
+
+            .add-btn {
+              background: white;
+              border: 2px solid #e23744;
+              color: #e23744;
+              padding: 7px 20px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 700;
+              cursor: pointer;
+              font-family: "Poppins", sans-serif;
+              transition: all 0.15s;
+              min-width: 80px;
+
+              &:hover {
+                background: #e23744;
+                color: white;
+              }
+            }
+
+            .qty-control {
+              display: flex;
+              align-items: center;
+              border: 2px solid #e23744;
+              border-radius: 8px;
+              overflow: hidden;
+
+              button {
+                background: none;
+                border: none;
+                color: #e23744;
+                width: 32px;
+                height: 34px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.15s;
+
+                &:hover {
+                  background: #fff3f3;
+                }
+              }
+
+              span {
+                min-width: 28px;
+                text-align: center;
+                font-size: 15px;
+                font-weight: 700;
+                color: #e23744;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 0;
+    align-items: flex-end;
+
+    .menu-modal {
+      border-radius: 20px 20px 0 0;
+      max-height: 90vh;
+    }
+  }
+}

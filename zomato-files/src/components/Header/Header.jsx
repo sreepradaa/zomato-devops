@@ -12,23 +12,14 @@ const Header = ({ cartCount = 0, onCartOpen, user, onLogout, onSearch, searchVal
   const [city, setCity] = useState("Chennai");
   const navigate = useNavigate();
 
-  const handleGetApp = () => {
-    // Scroll to CTA section if on homepage, or open play store
-    const ctaEl = document.querySelector(".cta");
-    if (ctaEl) {
-      ctaEl.scrollIntoView({ behavior: "smooth" });
-    } else {
-      window.open("https://play.google.com/store/apps/details?id=com.application.zomato", "_blank");
-    }
-    setOpen(false);
+  const handleSearch = (e) => {
+    if (onSearch) onSearch(e.target.value);
   };
 
   return (
     <div className="header">
       <nav>
-        <span onClick={handleGetApp} style={{ cursor: "pointer" }}>
-          Get the App
-        </span>
+        <span>Get the App</span>
         <div className="right">
           <span onClick={() => navigate("/add-restaurant")} style={{ cursor: "pointer" }}>
             Add Restaurant
@@ -49,9 +40,11 @@ const Header = ({ cartCount = 0, onCartOpen, user, onLogout, onSearch, searchVal
             onClick={onCartOpen}
             style={{ cursor: "pointer", position: "relative", display: "flex", alignItems: "center", gap: "4px" }}
           >
-            <ShoppingCartIcon style={{ fontSize: 18 }} />
+            <ShoppingCartIcon style={{ fontSize: 20 }} />
             Cart
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+            {cartCount > 0 && (
+              <span className="cart-badge">{cartCount}</span>
+            )}
           </span>
         </div>
       </nav>
@@ -64,7 +57,6 @@ const Header = ({ cartCount = 0, onCartOpen, user, onLogout, onSearch, searchVal
         <div className="sideMenu">
           <img src={blackLogo} alt="logo" />
           <div className="innerMenu">
-            <span onClick={handleGetApp}>Get the App</span>
             <span onClick={() => { navigate("/add-restaurant"); setOpen(false); }}>Add Restaurant</span>
             {user ? (
               <>
@@ -78,7 +70,7 @@ const Header = ({ cartCount = 0, onCartOpen, user, onLogout, onSearch, searchVal
               </>
             )}
             <span onClick={() => { onCartOpen(); setOpen(false); }}>
-              🛒 Cart {cartCount > 0 && `(${cartCount})`}
+              Cart {cartCount > 0 && `(${cartCount})`}
             </span>
           </div>
         </div>
@@ -94,16 +86,13 @@ const Header = ({ cartCount = 0, onCartOpen, user, onLogout, onSearch, searchVal
             <option value="Delhi">Delhi</option>
             <option value="Mumbai">Mumbai</option>
             <option value="Kolkata">Kolkata</option>
-            <option value="Ahmedabad">Ahmedabad</option>
-            <option value="Bengaluru">Bengaluru</option>
-            <option value="Hyderabad">Hyderabad</option>
           </select>
           |
           <input
             type="text"
             placeholder="Search for restaurant, cuisine or a dish"
             value={searchValue || ""}
-            onChange={(e) => onSearch && onSearch(e.target.value)}
+            onChange={handleSearch}
           />
         </div>
       </div>
