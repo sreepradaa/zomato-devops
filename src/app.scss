@@ -5,3 +5,28 @@
   padding: 0;
   box-sizing: border-box;
 }
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+body {
+  font-family: "Poppins", sans-serif;
+}

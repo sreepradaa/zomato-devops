@@ -7,6 +7,18 @@ import CTA from "./components/CTA/CTA";
 import Cities from "./components/Cities/Cities";
 import Collection from "./components/Collections/Collection";
 import Card from "./components/Card/Card";
+import { useState } from "react";
+
+const [search, setSearch] = useState("");
+<input
+  type="text"
+  placeholder="Search restaurants..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+/>
+const filteredData = data.filter(item =>
+  item.name.toLowerCase().includes(search.toLowerCase())
+);
 
 function App() {
   return (
