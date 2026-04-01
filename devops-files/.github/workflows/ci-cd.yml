@@ -1,0 +1,187 @@
+name: Zomato Clone - CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/zomato-clone
+  NODE_VERSION: "16"
+
+jobs:
+  # ─────────────────────────────────────────
+  # JOB 1: Code Quality & Security Scan
+  # ─────────────────────────────────────────
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      - name: Run tests
+        run: npm test -- --watchAll=false --passWithNoTests
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+          CI: true
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level=high || true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: coverage/
+
+  # ─────────────────────────────────────────
+  # JOB 2: Build React App
+  # ─────────────────────────────────────────
+  build-app:
+    name: Build React Application
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+          CI: false
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: build/
+          retention-days: 1
+
+  # ─────────────────────────────────────────
+  # JOB 3: Docker Build & Security Scan
+  # ─────────────────────────────────────────
+  docker-build:
+    name: Docker Build & Trivy Scan
+    runs-on: ubuntu-latest
+    needs: build-app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_OPTIONS=--openssl-legacy-provider
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          format: "table"
+          exit-code: "0"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
+          output: trivy-results.txt
+
+      - name: Upload Trivy scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-security-report
+          path: trivy-results.txt
+
+  # ─────────────────────────────────────────
+  # JOB 4: Push to DockerHub (main branch only)
+  # ─────────────────────────────────────────
+  docker-push:
+    name: Push to DockerHub
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image digest
+        run: echo "Image pushed - ${{ steps.docker_build.outputs.digest }}"
+
+  # ─────────────────────────────────────────
+  # JOB 5: Deploy (main branch only)
+  # ─────────────────────────────────────────
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: docker-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ env.DOCKER_IMAGE }}:latest
+            docker stop zomato-app || true
+            docker rm zomato-app || true
+            docker run -d \
+              --name zomato-app \
+              --restart unless-stopped \
+              -p 3000:80 \
+              ${{ env.DOCKER_IMAGE }}:latest
+            docker image prune -f
+            echo "Deployment complete at $(date)"

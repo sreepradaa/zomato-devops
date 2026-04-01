@@ -1,0 +1,50 @@
+
+services:
+  # React App (built and served by Nginx)
+  zomato-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zomato-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - zomato-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.zomato.service=frontend"
+      - "com.zomato.version=1.0.0"
+
+  # Nginx Reverse Proxy (sits in front of the app)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: zomato-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      zomato-app:
+        condition: service_healthy
+    networks:
+      - zomato-network
+    labels:
+      - "com.zomato.service=proxy"
+
+networks:
+  zomato-network:
+    driver: bridge
+    name: zomato-network
+
+volumes:
+  app-data:
+    driver: local
